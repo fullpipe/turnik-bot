@@ -1,9 +1,6 @@
 package main
 
 import (
-	"log"
-	"strconv"
-
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
@@ -11,7 +8,7 @@ type Question struct {
 	Prefix  string
 	Text    string
 	Bot     *tb.Bot
-	answers map[string]Answer
+	answers []Answer
 }
 
 type Answer struct {
@@ -29,23 +26,26 @@ func NewQuestion(text string, prefix string, bot *tb.Bot) *Question {
 		Bot:    bot,
 	}
 
-	q.answers = map[string]Answer{}
+	q.answers = []Answer{}
 	return q
 }
 
 func (q *Question) AddAnswer(id string, text string, callback AnswerCallback) {
 	answerButton := tb.InlineButton{
-		Unique: q.Prefix + strconv.Itoa(len(q.answers)),
+		Unique: q.Prefix + id,
 		Text:   text,
 	}
+
 	q.Bot.Handle(&answerButton, func(c *tb.Callback) {
 		callback(c)
 		q.Bot.Respond(c, &tb.CallbackResponse{})
 	})
-	q.answers[id] = Answer{
+
+	q.answers = append(q.answers, Answer{
+		id:     id,
 		text:   text,
 		button: &answerButton,
-	}
+	})
 }
 
 func (q *Question) Send(b *tb.Bot, r tb.Recipient, o *tb.SendOptions) (*tb.Message, error) {
@@ -54,6 +54,5 @@ func (q *Question) Send(b *tb.Bot, r tb.Recipient, o *tb.SendOptions) (*tb.Messa
 	for _, a := range q.answers {
 		keys = append(keys, []tb.InlineButton{*a.button})
 	}
-	log.Println("Send question", q.Text)
 	return b.Send(r, q.Text, &tb.ReplyMarkup{InlineKeyboard: keys})
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/robfig/cron/v3"
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -22,18 +23,23 @@ type Schedule struct {
 }
 
 func main() {
+	log.Println("Starting bot ...")
+
 	var err error
 	db, err = gorm.Open(os.Getenv("DB_TYPE"), os.Getenv("DB_URI"))
-
-	scheduler = &Scheduler{db: db}
-
 	if err != nil {
-		panic("failed to connect database")
+		log.Fatal(err)
 	}
+
 	defer db.Close()
+
+	if os.Getenv("DB_TYPE") == "mysql" {
+		db = db.Set("gorm:table_options", "ENGINE=InnoDB CHARSET=utf8 auto_increment=1")
+	}
 
 	db.AutoMigrate(&User{}, &Schedule{})
 
+	scheduler = &Scheduler{db: db}
 	b, err := tb.NewBot(tb.Settings{
 		Token:  os.Getenv("TELEGRAM_TOKEN"),
 		URL:    os.Getenv("TELEGRAM_URL"),
@@ -42,7 +48,6 @@ func main() {
 
 	if err != nil {
 		log.Fatal(err)
-		return
 	}
 
 	workTimeQuestion := NewQuestion("Когда ты приходишь на  работу?", "worktime_", b)
@@ -63,26 +68,26 @@ func main() {
 	howOften.AddAnswer("every_hour", "каждый час", func(c *tb.Callback) {
 		updateEveryHours(c.Sender.Recipient(), 1)
 	})
-	howOften.AddAnswer("every_two_hours", "каждые два", func(c *tb.Callback) {
+	howOften.AddAnswer("every_two_hours", "каждые два часа", func(c *tb.Callback) {
 		updateEveryHours(c.Sender.Recipient(), 2)
 	})
-	howOften.AddAnswer("every_three_hours", "каждые три", func(c *tb.Callback) {
+	howOften.AddAnswer("every_three_hours", "каждые три часа", func(c *tb.Callback) {
 		updateEveryHours(c.Sender.Recipient(), 3)
 	})
 
-	c := cron.New()
 	motivator := &Motivator{bot: b, db: db}
-	c.AddFunc("@every 1m", func() {
+	cron := cron.New()
+	cron.AddFunc("@every 1m", func() {
 		motivator.SendMotivations()
 	})
-	c.Start()
+	cron.Start()
+
+	log.Println("Bot is running.")
 
 	b.Handle("/start", func(m *tb.Message) {
 		if !m.Private() {
 			return
 		}
-		log.Println(m.Sender.Recipient())
-		log.Println(m.Sender.ID)
 
 		user := GetOrInitUserById(m.Sender.Recipient())
 
@@ -92,11 +97,11 @@ func main() {
 			b.Send(m.Sender, "Мы сделаем из тебя человека.")
 			b.Notify(m.Sender, tb.UploadingPhoto)
 			time.Sleep(1 * time.Second)
-			motivator.SendAnimation(m.Sender, "https://media.giphy.com/media/DDZgAUGUssAcE/giphy.gif", "Это ты")
+			motivator.SendAnimation(m.Sender, "https://media.giphy.com/media/S6BPyJRL1wnl4KZIBJ/giphy.gif", "Это твоя цель")
 
 			b.Notify(m.Sender, tb.UploadingPhoto)
 			time.Sleep(4 * time.Second)
-			motivator.SendAnimation(m.Sender, "https://media.giphy.com/media/CyESeFgx6xgNG/giphy.gif", "А это твоя цель")
+			motivator.SendAnimation(m.Sender, "https://media.giphy.com/media/JRtF14CBtoceQrnVhw/giphy.gif", "А это ты")
 
 			b.Notify(m.Sender, tb.Typing)
 			time.Sleep(2 * time.Second)

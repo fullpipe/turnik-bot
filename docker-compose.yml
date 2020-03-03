@@ -1,0 +1,17 @@
+version: '3.1'
+services:
+  app:
+    build: .
+    restart: always
+    environment:
+      DB_TYPE: mysql
+      DB_URI: "root:123@tcp(db)/turnik?charset=utf8mb4&parseTime=True"
+      TELEGRAM_TOKEN: YOUR_TOKEN_FROM_BOTFATHER
+      TELEGRAM_URL: https://api.telegram.org
+    depends_on: ["db"]
+
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: 123
+      MYSQL_DATABASE: turnik
