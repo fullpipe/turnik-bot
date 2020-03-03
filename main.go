@@ -71,14 +71,12 @@ func main() {
 	})
 
 	c := cron.New()
-	sender := &Sender{bot: b, db: db}
-	c.AddFunc("@every 5s", func() {
-		log.Println("cron")
-		sender.SendMotivations()
+	motivator := &Motivator{bot: b, db: db}
+	c.AddFunc("@every 1m", func() {
+		motivator.SendMotivations()
 	})
 	c.Start()
 
-	motivator := &Motivator{bot: b}
 	b.Handle("/start", func(m *tb.Message) {
 		if !m.Private() {
 			return
@@ -93,11 +91,12 @@ func main() {
 			time.Sleep(2 * time.Second)
 			b.Send(m.Sender, "Мы сделаем из тебя человека.")
 			b.Notify(m.Sender, tb.UploadingPhoto)
-			time.Sleep(2 * time.Second)
-			motivator.SendAnimation(m.Sender, "./assets/p2.gif", "Это твоя цель")
+			time.Sleep(1 * time.Second)
+			motivator.SendAnimation(m.Sender, "https://media.giphy.com/media/DDZgAUGUssAcE/giphy.gif", "Это ты")
+
 			b.Notify(m.Sender, tb.UploadingPhoto)
-			time.Sleep(2 * time.Second)
-			motivator.SendAnimation(m.Sender, "./assets/b1.gif", "А это ты")
+			time.Sleep(4 * time.Second)
+			motivator.SendAnimation(m.Sender, "https://media.giphy.com/media/CyESeFgx6xgNG/giphy.gif", "А это твоя цель")
 
 			b.Notify(m.Sender, tb.Typing)
 			time.Sleep(2 * time.Second)
