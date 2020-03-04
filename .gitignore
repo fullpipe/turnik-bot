@@ -16,4 +16,4 @@
 turnik-bot
 *.db
 docker-compose.override.yml
-var
+data

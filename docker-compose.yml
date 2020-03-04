@@ -4,15 +4,6 @@ services:
     build: .
     restart: always
     environment:
-      DB_TYPE: mysql
-      DB_URI: "root:123@tcp(db)/turnik?charset=utf8mb4&parseTime=True"
-      TELEGRAM_TOKEN: YOUR_TOKEN_FROM_BOTFATHER
-      TELEGRAM_URL: https://api.telegram.org
-    depends_on: ["db"]
-
-  db:
-    image: mysql:8
-    command: --default-authentication-plugin=mysql_native_password
-    environment:
-      MYSQL_ROOT_PASSWORD: 123
-      MYSQL_DATABASE: turnik
+      DB_TYPE: sqlite3
+      TELEGRAM_TOKEN: YOUTOKETFROMBOTFATHER
+      TELEGRAM_URL: https://api.telegram.org #or your proxy http://IP:30012 @see https://github.com/fullpipe/tele-proxy
