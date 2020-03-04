@@ -3,6 +3,8 @@ services:
   app:
     build: .
     restart: always
+    volumes:
+      - ./data:/app/data
     environment:
       DB_TYPE: sqlite3
       TELEGRAM_TOKEN: YOUTOKETFROMBOTFATHER
