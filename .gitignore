@@ -17,3 +17,4 @@ turnik-bot
 *.db
 docker-compose.override.yml
 data
+kustomization.yaml
