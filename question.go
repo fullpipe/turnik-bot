@@ -12,9 +12,10 @@ type Question struct {
 }
 
 type Answer struct {
-	id     string
-	text   string
-	button *tb.InlineButton
+	id           string
+	text         string
+	responseText string
+	button       *tb.InlineButton
 }
 
 type AnswerCallback func(c *tb.Callback)
@@ -30,21 +31,24 @@ func NewQuestion(text string, prefix string, bot *tb.Bot) *Question {
 	return q
 }
 
-func (q *Question) AddAnswer(id string, text string, callback AnswerCallback) {
+func (q *Question) AddAnswer(id string, text string, responseText string, callback AnswerCallback) {
 	answerButton := tb.InlineButton{
 		Unique: q.Prefix + id,
 		Text:   text,
 	}
 
 	q.Bot.Handle(&answerButton, func(c *tb.Callback) {
-		callback(c)
+		q.Bot.Edit(c.Message, responseText, &tb.ReplyMarkup{})
 		q.Bot.Respond(c, &tb.CallbackResponse{})
+
+		callback(c)
 	})
 
 	q.answers = append(q.answers, Answer{
-		id:     id,
-		text:   text,
-		button: &answerButton,
+		id:           id,
+		text:         text,
+		responseText: responseText,
+		button:       &answerButton,
 	})
 }
 

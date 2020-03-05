@@ -14,6 +14,9 @@ import (
 
 var db *gorm.DB
 var scheduler *Scheduler
+var bot *tb.Bot
+var workTimeQuestion *Question
+var howOften *Question
 
 type Schedule struct {
 	gorm.Model
@@ -40,7 +43,7 @@ func main() {
 	db.AutoMigrate(&User{}, &Schedule{})
 
 	scheduler = &Scheduler{db: db}
-	b, err := tb.NewBot(tb.Settings{
+	bot, err = tb.NewBot(tb.Settings{
 		Token:  os.Getenv("TELEGRAM_TOKEN"),
 		URL:    os.Getenv("TELEGRAM_URL"),
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
@@ -50,32 +53,35 @@ func main() {
 		log.Fatal(err)
 	}
 
-	workTimeQuestion := NewQuestion("Когда ты приходишь на  работу?", "worktime_", b)
-	workTimeQuestion.AddAnswer("8", "к 8", func(c *tb.Callback) {
+	workTimeQuestion = NewQuestion("Когда ты приходишь на  работу?", "worktime_", bot)
+	workTimeQuestion.AddAnswer("8", "к 8", "Ок, записал. Приходишь к 8.", func(c *tb.Callback) {
 		updateDayStart(c.Sender.Recipient(), "8h")
 	})
-	workTimeQuestion.AddAnswer("9", "к 9", func(c *tb.Callback) {
+	workTimeQuestion.AddAnswer("9", "к 9", "Ок, записал. Приходишь к 9.", func(c *tb.Callback) {
 		updateDayStart(c.Sender.Recipient(), "9h")
 	})
-	workTimeQuestion.AddAnswer("10", "к 10", func(c *tb.Callback) {
+	workTimeQuestion.AddAnswer("10", "к 10", "Ок, записал. Приходишь к 10.", func(c *tb.Callback) {
 		updateDayStart(c.Sender.Recipient(), "10h")
 	})
-	workTimeQuestion.AddAnswer("11", "к 11", func(c *tb.Callback) {
+	workTimeQuestion.AddAnswer("11", "к 11", "Ок, записал. Приходишь к 11.", func(c *tb.Callback) {
 		updateDayStart(c.Sender.Recipient(), "11h")
 	})
 
-	howOften := NewQuestion("Как часто ты хотел бы заниматься?", "how_often_", b)
-	howOften.AddAnswer("every_hour", "каждый час", func(c *tb.Callback) {
+	howOften = NewQuestion("Как часто ты хотел бы заниматься?", "how_often_", bot)
+	howOften.AddAnswer("every_hour", "каждый час", "Хочешь заниматься каждый час.", func(c *tb.Callback) {
 		updateEveryHours(c.Sender.Recipient(), 1)
 	})
-	howOften.AddAnswer("every_two_hours", "каждые два часа", func(c *tb.Callback) {
+	howOften.AddAnswer("every_two_hours", "каждые два часа", "Хочешь заниматься каждые два часа.", func(c *tb.Callback) {
 		updateEveryHours(c.Sender.Recipient(), 2)
 	})
-	howOften.AddAnswer("every_three_hours", "каждые три часа", func(c *tb.Callback) {
+	howOften.AddAnswer("every_three_hours", "каждые три часа", "Хочешь заниматься каждые три часа.", func(c *tb.Callback) {
 		updateEveryHours(c.Sender.Recipient(), 3)
 	})
+	howOften.AddAnswer("every_four_hours", "каждые четыре часа", "Хочешь заниматься каждые четыре часа.", func(c *tb.Callback) {
+		updateEveryHours(c.Sender.Recipient(), 4)
+	})
 
-	motivator := &Motivator{bot: b, db: db}
+	motivator := &Motivator{bot: bot, db: db}
 	cron := cron.New()
 	cron.AddFunc("@every 1m", func() {
 		motivator.SendMotivations()
@@ -84,7 +90,7 @@ func main() {
 
 	log.Println("Bot is running.")
 
-	b.Handle("/start", func(m *tb.Message) {
+	bot.Handle("/start", func(m *tb.Message) {
 		if !m.Private() {
 			return
 		}
@@ -92,32 +98,43 @@ func main() {
 		user := GetOrInitUserById(m.Sender.Recipient())
 
 		if db.NewRecord(user) {
-			b.Notify(m.Sender, tb.Typing)
+			bot.Notify(m.Sender, tb.Typing)
 			time.Sleep(2 * time.Second)
-			b.Send(m.Sender, "Мы сделаем из тебя человека.")
-			b.Notify(m.Sender, tb.UploadingPhoto)
+			bot.Send(m.Sender, "Мы сделаем из тебя человека.")
+			bot.Notify(m.Sender, tb.UploadingPhoto)
 			time.Sleep(1 * time.Second)
 			motivator.SendAnimation(m.Sender, "https://media.giphy.com/media/S6BPyJRL1wnl4KZIBJ/giphy.gif", "Это твоя цель")
 
-			b.Notify(m.Sender, tb.UploadingPhoto)
+			bot.Notify(m.Sender, tb.UploadingPhoto)
 			time.Sleep(4 * time.Second)
 			motivator.SendAnimation(m.Sender, "https://media.giphy.com/media/JRtF14CBtoceQrnVhw/giphy.gif", "А это ты")
 
-			b.Notify(m.Sender, tb.Typing)
+			bot.Notify(m.Sender, tb.Typing)
 			time.Sleep(2 * time.Second)
 
-			b.Send(m.Sender, "Ответь на пару вопросов")
+			bot.Send(m.Sender, "Ответь на пару вопросов")
 			db.Save(user)
-			b.Notify(m.Sender, tb.Typing)
+			bot.Notify(m.Sender, tb.Typing)
 			time.Sleep(1 * time.Second)
 		}
 
-		b.Send(m.Sender, workTimeQuestion)
-		b.Notify(m.Sender, tb.Typing)
-		time.Sleep(3 * time.Second)
-		b.Send(m.Sender, howOften)
+		bot.Send(m.Sender, workTimeQuestion)
+		bot.Notify(m.Sender, tb.Typing)
 	})
-	b.Start()
+
+	bot.Handle("/settings", func(m *tb.Message) {
+		if !m.Private() {
+			return
+		}
+
+		user := GetOrInitUserById(m.Sender.Recipient())
+		scheduler.ResetUserSetting(user)
+		bot.Notify(m.Sender, tb.Typing)
+		time.Sleep(1 * time.Second)
+		bot.Send(m.Sender, workTimeQuestion)
+		bot.Notify(m.Sender, tb.Typing)
+	})
+	bot.Start()
 }
 
 func updateDayStart(id string, startTime string) {
@@ -126,6 +143,9 @@ func updateDayStart(id string, startTime string) {
 	user.StartsAt = &hours
 	db.Save(&user)
 	scheduler.Schedule(user)
+
+	time.Sleep(1 * time.Second)
+	bot.Send(user, howOften)
 }
 
 func updateEveryHours(id string, every int) {
@@ -133,6 +153,9 @@ func updateEveryHours(id string, every int) {
 	user.EveryHours = &every
 	db.Save(&user)
 	scheduler.Schedule(user)
+
+	time.Sleep(1 * time.Second)
+	bot.Send(user, "Я обновил расписание. Жди дальнейших указаний.")
 }
 
 func FromBod(t time.Time) time.Duration {
