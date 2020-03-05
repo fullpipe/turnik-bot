@@ -22,7 +22,7 @@ func (s *Scheduler) Schedule(user *User) {
 
 	s.scheduleAtTimeWithRandom(*user.StartsAt+time.Minute*10, user)
 	start := *user.StartsAt + time.Hour*time.Duration(*user.EveryHours)
-	till := *user.StartsAt + time.Hour*8
+	till := *user.StartsAt + time.Hour*9
 
 	for {
 		s.scheduleAtTimeWithRandom(start, user)
