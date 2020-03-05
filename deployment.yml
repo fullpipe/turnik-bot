@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: turnik-bot-deployment
+  labels:
+    app: turnik-bot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: turnik-bot
+  template:
+    metadata:
+      labels:
+        app: turnik-bot
+    spec:
+      containers:
+      - name: turnik-bot
+        image: fullpipe/turnik-bot:latest
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: data-volume
+          mountPath: /app/data
+        - name: tz-config
+          mountPath: /etc/localtime
+        env:
+        - name: TELEGRAM_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: wikium-turnik-bot-mtk56d6h57
+              key: token
+      volumes:
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: turnik-bot-db-pvc
+      - name: tz-config
+        hostPath:
+           path: /usr/share/zoneinfo/Europe/Moscow
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: turnik-bot-db-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 200Mi
