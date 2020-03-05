@@ -26,28 +26,53 @@ var motivations = []Motivation{
 		URL:  "https://media.giphy.com/media/ChFAAc0MssZtC/giphy.gif",
 	},
 	Motivation{
-		Text: "Есть к чему стремиться, за работу",
+		Text: "есть к чему стремиться, за работу",
 		URL:  "https://media.giphy.com/media/DXWTC06NVT3QA/giphy.gif",
 	},
 	Motivation{
-		Text: "Сделай подход, может ты не один такой",
+		Text: "cделай подход, может ты не один такой",
 		URL:  "https://media.giphy.com/media/T1JzQs6Z7QErC/giphy.gif",
 	},
-	Motivation{
-		Text: "Пора бы подтянуться",
-	},
-	Motivation{
-		Text: "Пора бы подтянуться",
-	},
-	Motivation{
-		Text: "Пора бы подтянуться",
-	},
-	Motivation{
-		Text: "Пора бы подтянуться",
-	},
-	Motivation{
-		Text: "Пора бы подтянуться",
-	},
+	Motivation{Text: "пора бы подтянуться"},
+	Motivation{Text: "время повисеть!"},
+	Motivation{Text: "еще подходик к перекладине?"},
+	Motivation{Text: "ну что, пошли подтянемся!"},
+	Motivation{Text: "не забываем подтягиваться!)"},
+	Motivation{Text: "турничек тебя совсем заждался!"},
+	Motivation{Text: "перекладина соскучилась по тебе!"},
+	Motivation{Text: "давай подтянемся!"},
+	Motivation{Text: "сам подтянись и позови товарища!"},
+	Motivation{Text: "просто сделай это!"},
+}
+
+var images = []string{
+	"https://media.giphy.com/media/l378bt0iIAawyEu0E/giphy.gif",
+	"https://media.giphy.com/media/ftegkgLJ5IJzS3b831/giphy.gif",
+	"https://media.giphy.com/media/yKE8VoclREyVW/giphy.gif",
+	"https://media.giphy.com/media/ftegkgLJ5IJzS3b831/giphy.gif",
+	"https://media.giphy.com/media/l378bt0iIAawyEu0E/giphy.gif",
+	"https://media.giphy.com/media/MFxTNJG3O16xCKnxQD/giphy.gif",
+	"https://media.giphy.com/media/wduVuQiB1QvpC/giphy.gif",
+	"https://media.giphy.com/media/LlbcL2bbpRZ7i/giphy.gif",
+	"https://media.giphy.com/media/h2ZYTXXR6o7mhMYtQT/giphy.gif",
+	"https://media.giphy.com/media/xUPGcD1LxZUkKUMOB2/giphy.gif",
+	"https://media.giphy.com/media/IMapVpI6hoS0o/giphy.gif",
+	"https://media.giphy.com/media/duxL0JufqG0iQ/giphy.gif",
+	"https://media.giphy.com/media/KP19EnxDthURy/giphy.gif",
+	"https://media.giphy.com/media/2MKiRiSobn4is/giphy.gif",
+	"https://media.giphy.com/media/K4mGIer9AgFNu/giphy.gif",
+	"https://media.giphy.com/media/ZrzzYqIgdUaAg/giphy.gif",
+	"https://media.giphy.com/media/mTSYOroyZJkNG/giphy.gif",
+	"https://media.giphy.com/media/j5VrvBfbV332AOow1B/giphy.gif",
+	"https://media.giphy.com/media/zhvsG2MUqW2Ws/giphy.gif",
+	"https://media.giphy.com/media/14qd2erccJrq2A/giphy.gif",
+	"https://media.giphy.com/media/KZYiIWFAm2X8k/giphy.gif",
+	"https://media.giphy.com/media/xT4uQfewy2BixUikIU/giphy.gif",
+	"https://media.giphy.com/media/lMwJagHc1tcPe/giphy.gif",
+	"https://media.giphy.com/media/CyESeFgx6xgNG/giphy.gif",
+	"https://media.giphy.com/media/623ZjXDkiQ9Yk/giphy.gif",
+	"https://media.giphy.com/media/gbPGNztPdhS6c/giphy.gif",
+	"https://media.giphy.com/media/3o7WTwlO4eajnoKQGk/giphy.gif",
 }
 
 func (m *Motivator) SendMotivations() {
@@ -69,7 +94,7 @@ func (m *Motivator) SendMotivations() {
 
 		rand.Seed(time.Now().Unix())
 		n := rand.Int() % len(motivations)
-		m.SendMotivation(&user, motivations[n])
+		go m.SendMotivation(&user, motivations[n])
 
 		user.LastWorkout = &now
 		user.LastScheduleID = &schedule.ID
@@ -78,11 +103,14 @@ func (m *Motivator) SendMotivations() {
 }
 
 func (m *Motivator) SendMotivation(r tb.Recipient, motivation Motivation) {
-	if motivation.URL == "" {
-		m.bot.Send(r, motivation.Text)
+	image := motivation.URL
+	if image == "" {
+		rand.Seed(time.Now().Unix())
+		n := rand.Int() % len(images)
+		image = images[n]
 	}
 
-	m.SendAnimation(r, motivation.URL, motivation.Text)
+	m.SendAnimation(r, image, motivation.Text)
 }
 
 func (m *Motivator) SendAnimation(r tb.Recipient, url string, caption string) {
