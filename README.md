@@ -28,3 +28,11 @@ TELEGRAM_URL: https://api.telegram.org #or your proxy http://IP:30012 @see https
 ```sh
 DB_TYPE=sqlite3 DB_URI=data/test.db TELEGRAM_TOKEN=YOUTOKETFROMBOTFATHER TELEGRAM_URL=https://api.telegram.org justrun -c 'go run .' .
 ```
+
+## TODO
+
+- time zone handling
+- add translations
+- move motivations to extenal json|yaml file
+- add more randomness
+- add more motivations
