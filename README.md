@@ -1,4 +1,12 @@
-## Usage
+# Turnik bot
+
+You need horizontal bar (turnik) in your office.  
+And your need subscribe on bot. Its possible  
+to launch your own bot. Or use mine.
+
+## Deployment
+
+See [deployment.yml](deployment.yml), or [docker-compose.yml](docker-compose.yml).
 
 ### Envars
 
@@ -15,7 +23,7 @@ TELEGRAM_TOKEN: YOUTOKETFROMBOTFATHER
 TELEGRAM_URL: https://api.telegram.org #or your proxy http://IP:30012 @see https://github.com/fullpipe/tele-proxy
 ```
 
-## Local 
+## Local development
 
 ```sh
 DB_TYPE=sqlite3 DB_URI=data/test.db TELEGRAM_TOKEN=YOUTOKETFROMBOTFATHER TELEGRAM_URL=https://api.telegram.org justrun -c 'go run .' .
