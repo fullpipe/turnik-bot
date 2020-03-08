@@ -78,7 +78,7 @@ var images = []string{
 func (m *Motivator) SendMotivations() {
 	schedules := []Schedule{}
 	now := time.Now()
-	m.db.Where("at BETWEEN ? AND ?", FromBod(now)-time.Minute*2, FromBod(now)).Find(&schedules)
+	m.db.Where("at BETWEEN ? AND ?", FromBod(now)-time.Minute*5, FromBod(now)).Find(&schedules)
 	for _, schedule := range schedules {
 		var user User
 		m.db.Model(&schedule).Related(&user)

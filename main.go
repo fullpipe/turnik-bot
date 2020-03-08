@@ -83,7 +83,7 @@ func main() {
 
 	motivator := &Motivator{bot: bot, db: db}
 	cron := cron.New()
-	cron.AddFunc("@every 1m", func() {
+	cron.AddFunc("@every 2m", func() {
 		motivator.SendMotivations()
 	})
 	cron.Start()
