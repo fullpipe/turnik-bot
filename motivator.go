@@ -43,6 +43,9 @@ var motivations = []Motivation{
 	Motivation{Text: "давай подтянемся!"},
 	Motivation{Text: "сам подтянись и позови товарища!"},
 	Motivation{Text: "просто сделай это!"},
+	Motivation{Text: "выйди во двор, подтянись"},
+	Motivation{Text: "ты давно хотел начать, так сделай это сейчас!"},
+	Motivation{Text: "погода не оправдание"},
 }
 
 var images = []string{
@@ -73,6 +76,11 @@ var images = []string{
 	"https://media.giphy.com/media/623ZjXDkiQ9Yk/giphy.gif",
 	"https://media.giphy.com/media/gbPGNztPdhS6c/giphy.gif",
 	"https://media.giphy.com/media/3o7WTwlO4eajnoKQGk/giphy.gif",
+	"https://media.giphy.com/media/iGMpf3IMQxpuw1mHjI/giphy.gif",
+	"https://media.giphy.com/media/MuAreXtF0eR9tyKzHR/giphy.gif",
+	"https://media.giphy.com/media/Z9tTGDXRjXgI4191cQ/giphy.gif",
+	"https://media.giphy.com/media/l1BgRucd74s7erdYs/giphy.gif",
+	"https://media.giphy.com/media/HdK972OCf3ahy/giphy.gif",
 }
 
 func (m *Motivator) SendMotivations() {
